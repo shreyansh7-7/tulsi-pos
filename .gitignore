@@ -1,0 +1,30 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Vendor directory
+vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Build artifacts
+bin/
+build/
+dist/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+tmp/
