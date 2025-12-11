@@ -57,5 +57,5 @@ func main() {
 	r.GET("/purchases", handlers.ListPurchases)
 
 
-	r.Run(":8088")
+	r.Run(":8080")
 }
