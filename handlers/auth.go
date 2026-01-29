@@ -21,7 +21,7 @@ type LoginInput struct {
 func Login(c *gin.Context) {
 	var input LoginInput
 	if err := c.BindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		utils.SendErrorResponse(c, http.StatusBadRequest, "invalid input")
 		return
 	}
 
@@ -38,18 +38,18 @@ func Login(c *gin.Context) {
 	`, input.Email).Scan(&userID, &passwordHash, &isActive)
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid email or password"})
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "invalid email or password")
 		return
 	}
 
 	if !isActive {
-		c.JSON(http.StatusForbidden, gin.H{"error": "user is inactive"})
+		utils.SendErrorResponse(c, http.StatusForbidden, "user is inactive")
 		return
 	}
 
 	// Check password
 	if !utils.CheckPassword(passwordHash, input.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid email or password"})
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "invalid email or password")
 		return
 	}
 
@@ -61,7 +61,7 @@ func Login(c *gin.Context) {
 		WHERE ur.user_id = $1
 	`, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot fetch roles"})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "cannot fetch roles")
 		return
 	}
 
@@ -81,16 +81,15 @@ func Login(c *gin.Context) {
 
 	tokenString, _ := token.SignedString(jwtSecret)
 
-	c.JSON(200, gin.H{
+	utils.SendSuccessResponse(c, http.StatusOK, gin.H{
 		"token": tokenString,
 		"user": gin.H{
 			"id":    userID,
 			"email": input.Email,
 			"roles": roles,
 		},
-	})
+	}, "Login successful")
 }
-
 
 type RegisterInput struct {
 	Name        string `json:"name"`
@@ -103,21 +102,21 @@ type RegisterInput struct {
 func Register(c *gin.Context) {
 	var input RegisterInput
 	if err := c.BindJSON(&input); err != nil {
-		c.JSON(400, gin.H{"error": "invalid input"})
+		utils.SendErrorResponse(c, http.StatusBadRequest, "invalid input")
 		return
 	}
 
 	// Hash password
 	hash, err := utils.HashPassword(input.Password)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "cannot hash password"})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "cannot hash password")
 		return
 	}
 
 	// Start transaction
 	tx, err := db.DB.Begin(c)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "failed to create user"})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "failed to create user")
 		return
 	}
 	defer tx.Rollback(c)
@@ -130,7 +129,7 @@ func Register(c *gin.Context) {
 	`, input.Name, input.Email, hash, input.CreatedByID).Scan(&userID)
 
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -141,14 +140,13 @@ func Register(c *gin.Context) {
 	`, userID, input.Role)
 
 	if err != nil {
-		c.JSON(500, gin.H{"error": "invalid role"})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "invalid role")
 		return
 	}
 
 	tx.Commit(c)
 
-	c.JSON(201, gin.H{
-		"message": "user created",
+	utils.SendSuccessResponse(c, http.StatusCreated, gin.H{
 		"user_id": userID,
-	})
+	}, "user created")
 }

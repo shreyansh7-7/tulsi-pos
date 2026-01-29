@@ -3,8 +3,10 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"tulsi-pos/db"
+	"tulsi-pos/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,19 +29,19 @@ type PurchaseRequest struct {
 func CreatePurchase(c *gin.Context) {
 	var req PurchaseRequest
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
+		utils.SendErrorResponse(c, http.StatusBadRequest, "invalid JSON")
 		return
 	}
 
 	if len(req.Items) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "at least one item is required"})
+		utils.SendErrorResponse(c, http.StatusBadRequest, "at least one item is required")
 		return
 	}
 
 	ctx := context.Background()
 	tx, err := db.DB.Begin(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to start tx"})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "failed to start tx")
 		return
 	}
 	defer tx.Rollback(ctx)
@@ -83,7 +85,7 @@ func CreatePurchase(c *gin.Context) {
 	).Scan(&purchaseID)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert purchase header: " + err.Error()})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "failed to insert purchase header: "+err.Error())
 		return
 	}
 
@@ -108,7 +110,7 @@ func CreatePurchase(c *gin.Context) {
 			lineTotal,
 		)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert purchase item: " + err.Error()})
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "failed to insert purchase item: "+err.Error())
 			return
 		}
 
@@ -125,22 +127,21 @@ func CreatePurchase(c *gin.Context) {
 			req.CreatedByID,
 		)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert inventory tx: " + err.Error()})
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "failed to insert inventory tx: "+err.Error())
 			return
 		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to commit tx"})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "failed to commit tx")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message":        "Purchase recorded",
+	utils.SendSuccessResponse(c, http.StatusCreated, gin.H{
 		"purchase_id":    purchaseID,
 		"total_amount":   totalAmount,
 		"total_quantity": totalQty,
-	})
+	}, "Purchase recorded")
 }
 
 func ListPurchases(c *gin.Context) {
@@ -153,7 +154,7 @@ func ListPurchases(c *gin.Context) {
 		ORDER BY created_at DESC
 	`)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	defer rows.Close()
@@ -164,7 +165,7 @@ func ListPurchases(c *gin.Context) {
 			ID            int64
 			InvoiceNumber string
 			SupplierName  string
-			CreatedAt     string
+			CreatedAt     time.Time
 		}
 
 		rows.Scan(&r.ID, &r.InvoiceNumber, &r.SupplierName, &r.CreatedAt)
@@ -173,9 +174,9 @@ func ListPurchases(c *gin.Context) {
 			"id":             r.ID,
 			"invoice_number": r.InvoiceNumber,
 			"supplier_name":  r.SupplierName,
-			"created_at":     r.CreatedAt,
+			"created_at":     utils.FormatDateTime(r.CreatedAt),
 		})
 	}
 
-	c.JSON(http.StatusOK, resp)
+	utils.SendSuccessResponse(c, http.StatusOK, resp, "Purchases fetched successfully")
 }

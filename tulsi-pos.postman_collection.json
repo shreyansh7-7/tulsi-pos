@@ -1,0 +1,428 @@
+{
+    "info": {
+        "_postman_id": "tulsi-pos-collection",
+        "name": "Tulsi POS API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Admin User\",\n    \"email\": \"admin@example.com\",\n    \"password\": \"securepassword\",\n    \"role\": \"admin\",\n    \"created_by\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "pm.environment.set(\"auth_token\", jsonData.token);",
+                                    ""
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"securepassword\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Products",
+            "item": [
+                {
+                    "name": "Create Product",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Paracetamol 500mg\",\n    \"sku\": \"PARA500\",\n    \"barcode\": \"123456789\",\n    \"hsn_code\": \"3004\",\n    \"gender\": \"unisex\",\n    \"category\": \"medicine\",\n    \"purchase_price\": 10.50,\n    \"sales_price\": 15.00,\n    \"gst_percent\": 12.0\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/products",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/products",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Product By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/products/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Suppliers",
+            "item": [
+                {
+                    "name": "Create Supplier",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Pharma Distro Ltd\",\n    \"contact_info\": \"Old PB Road, Hubli\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/suppliers",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "suppliers"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Suppliers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/suppliers",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "suppliers"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Supplier By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/suppliers/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Supplier",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Pharma Distro Ltd Updated\",\n    \"contact_info\": \"New PB Road, Hubli\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/suppliers/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Supplier",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/suppliers/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Purchases",
+            "item": [
+                {
+                    "name": "Create Purchase",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{auth_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"supplier_id\": 1,\n    \"invoice_number\": \"SUP-INV-001\",\n    \"notes\": \"Initial stock\",\n    \"created_by\": 1,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 100,\n            \"purchase_price\": 10.50,\n            \"gst_percent\": 12.0\n        }\n    ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/purchases",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "purchases"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "List Purchases",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/purchases",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "purchases"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Sales",
+            "item": [
+                {
+                    "name": "Create Invoice (Draft)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"invoice\": {\n        \"customer_name\": \"John Doe\",\n        \"customer_mobile\": \"9876543210\",\n        \"payment_mode\": \"cash\",\n        \"is_confirmed\": false\n    },\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"mrp\": 20.0,\n            \"sales_rate\": 15.0,\n            \"discount_type\": \"INR\",\n            \"discount_value\": 0,\n            \"gst_percent\": 12.0\n        }\n    ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/sales-invoices",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "sales-invoices"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Invoice (Confirm)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"invoice\": {\n        \"customer_name\": \"John Doe\",\n        \"customer_mobile\": \"9876543210\",\n        \"payment_mode\": \"UPI\",\n        \"is_confirmed\": true\n    },\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 5,\n            \"mrp\": 20.0,\n            \"sales_rate\": 15.0,\n            \"discount_type\": \"PERCENT\",\n            \"discount_value\": 5,\n            \"gst_percent\": 12.0\n        }\n    ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/sales-invoices/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "sales-invoices",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Invoice By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/sales/invoices/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "sales",
+                                "invoices",
+                                "1"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "List Invoices",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/sales/invoices?page=1&limit=20",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "sales",
+                                "invoices"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080",
+            "type": "string"
+        }
+    ]
+}

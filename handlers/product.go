@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"tulsi-pos/db"
+	"tulsi-pos/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,7 @@ func CreateProduct(c *gin.Context) {
 	var p Product
 
 	if err := c.BindJSON(&p); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid JSON")
 		return
 	}
 
@@ -51,7 +52,7 @@ func CreateProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, gin.H{"message": "Product created", "id": id})
+	utils.SendSuccessResponse(c, http.StatusCreated, gin.H{"id": id}, "Product created")
 }
 
 // GET /products
@@ -88,14 +89,14 @@ func GetProducts(c *gin.Context) {
 		})
 	}
 
-	c.JSON(200, products)
+	utils.SendSuccessResponse(c, http.StatusOK, products, "Products fetched successfully")
 }
 
 func GetProductByID(c *gin.Context) {
 	idStr := c.Param("id")
 	productID, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil || productID <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid product id"})
+		utils.SendErrorResponse(c, http.StatusBadRequest, "invalid product id")
 		return
 	}
 
@@ -123,9 +124,9 @@ func GetProductByID(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "product not found"})
+		utils.SendErrorResponse(c, http.StatusNotFound, "product not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, p)
+	utils.SendSuccessResponse(c, http.StatusOK, p, "Product details fetched successfully")
 }

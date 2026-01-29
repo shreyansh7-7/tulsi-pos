@@ -12,6 +12,7 @@ import (
 
 	"tulsi-pos/db"
 	"tulsi-pos/services"
+	"tulsi-pos/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -82,11 +83,10 @@ func CreateInvoice(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message":      "invoice created",
+	utils.SendSuccessResponse(c, http.StatusCreated, gin.H{
 		"invoice_id":   invoiceID,
 		"final_status": finalStatus,
-	})
+	}, "invoice created")
 }
 
 // PUT /sales/invoices/:id
@@ -116,14 +116,14 @@ func UpdateInvoice(c *gin.Context) {
 	updatedID, finalStatus, err := upsertInvoice(ctx, idPtr, in)
 	if err != nil {
 		if err == ErrInvoiceLocked {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invoice already invoiced, cannot update"})
+			utils.SendErrorResponse(c, http.StatusBadRequest, "invoice already invoiced, cannot update")
 			return
 		}
 		if err == ErrInvoiceNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "invoice not found"})
+			utils.SendErrorResponse(c, http.StatusNotFound, "invoice not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -135,11 +135,10 @@ func UpdateInvoice(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message":      "invoice updated",
+	utils.SendSuccessResponse(c, http.StatusOK, gin.H{
 		"invoice_id":   updatedID,
 		"final_status": finalStatus,
-	})
+	}, "invoice updated")
 }
 
 // ---------- Internal Logic ----------
@@ -503,6 +502,7 @@ func GetInvoiceByID(c *gin.Context) {
 		InvoicePDFKey             *string `json:"invoice_pdf_key"`
 	}
 
+	var createdAt time.Time
 	err = db.DB.QueryRow(ctx, `
 		SELECT id, invoice_number, customer_name, customer_mobile, status,
 		       total_amount_before_discount, total_discount, taxable_amount,
@@ -516,12 +516,17 @@ func GetInvoiceByID(c *gin.Context) {
 		&header.TotalAmountBeforeDiscount, &header.TotalDiscount,
 		&header.TaxableAmount, &header.TotalGST,
 		&header.TotalInvoiceAmount, &header.PaymentMode,
-		&header.CreatedAt, &header.InvoicePDFKey,
+		&createdAt, &header.InvoicePDFKey,
 	)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "invoice not found"})
+		if err == pgx.ErrNoRows {
+			utils.SendErrorResponse(c, http.StatusNotFound, "invoice not found")
+			return
+		}
+		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
+	header.CreatedAt = utils.FormatDateTime(createdAt)
 
 	rows, err := db.DB.Query(ctx, `
 		SELECT sii.id, p.name, sii.quantity, sii.sales_rate, sii.discount_amount,
@@ -531,7 +536,7 @@ func GetInvoiceByID(c *gin.Context) {
 		WHERE sii.sales_invoice_id = $1 AND sii.deleted_at IS NULL
 	`, invoiceID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	defer rows.Close()
@@ -566,10 +571,10 @@ func GetInvoiceByID(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	utils.SendSuccessResponse(c, http.StatusOK, gin.H{
 		"invoice": header,
 		"items":   items,
-	})
+	}, "Invoice details fetched successfully")
 }
 
 func ListInvoices(c *gin.Context) {
@@ -616,7 +621,7 @@ func ListInvoices(c *gin.Context) {
 
 	rows, err := db.DB.Query(ctx, query, params...)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	defer rows.Close()
@@ -646,13 +651,16 @@ func ListInvoices(c *gin.Context) {
 			"customer_mobile":      r.CustomerMobile,
 			"status":               r.Status,
 			"total_invoice_amount": r.TotalInvoiceAmount,
-			"created_at":           r.CreatedAt,
+			"created_at":           utils.FormatDateTime(r.CreatedAt),
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	// TODO: Format CreatedAt dates in the loop above if needed, currently returning raw time.Time
+	// Let's modify the struct to perform formatting
+
+	utils.SendSuccessResponse(c, http.StatusOK, gin.H{
 		"page":     page,
 		"limit":    limit,
 		"invoices": resp,
-	})
+	}, "Invoices fetched successfully")
 }

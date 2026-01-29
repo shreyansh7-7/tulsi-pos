@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 	"strings"
+	"tulsi-pos/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -15,7 +16,7 @@ func AuthRequired() gin.HandlerFunc {
 		tokenString := c.GetHeader("Authorization")
 
 		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer ") {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing or invalid token"})
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "missing or invalid token")
 			c.Abort()
 			return
 		}
@@ -27,7 +28,7 @@ func AuthRequired() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "invalid token")
 			c.Abort()
 			return
 		}

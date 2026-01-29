@@ -56,6 +56,11 @@ func main() {
 
 	r.GET("/purchases", handlers.ListPurchases)
 
+	r.POST("/suppliers", handlers.CreateSupplier)
+	r.GET("/suppliers", handlers.GetSuppliers)
+	r.GET("/suppliers/:id", handlers.GetSupplierByID)
+	r.PUT("/suppliers/:id", handlers.UpdateSupplier)
+	r.DELETE("/suppliers/:id", handlers.DeleteSupplier)
 
 	r.Run(":8080")
 }
